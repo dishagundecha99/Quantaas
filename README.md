@@ -1,5 +1,15 @@
 # QuantTaaS
 
+
+
+# changes pending :
+MONGO_CONNECTION change required, need to understand that yet in constants.py
+KAFKA_USERNAME - do we need to edit these, check
+
+job-status-service - looks fine, can be mostly leveraged completely
+deployments - same (if we add new services we will need to modify)
+rest to dos.
+
 Project Proposal: QuantTaaS (Quantization
 and Pruning as a Service)
 #Team Members
