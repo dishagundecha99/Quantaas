@@ -1,0 +1,23 @@
+#
+# See https://kubernetes.io/docs/concepts/services-networking/ingress/
+#
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress
+  annotations:
+    # use the shared ingress-nginx
+    # kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/ingress.class: "gce"
+    nginx.ingress.kubernetes.io/proxy-body-size: 16m
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              service:
+                name: backend-service
+                port:
+                  number: 5002
+            path: /
+            pathType: Prefix

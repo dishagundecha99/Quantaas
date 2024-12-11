@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap 
+metadata:
+  name: minio-configmap 
+data:
+  # Configuration values can be set as key-value properties
+  MINIO_HOST: "minio:9000"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio-secret
+data:
+  MINIO_PASSWORD: cm9vdHBhc3MxMjM=
+  MINIO_USER: cm9vdHVzZXI=
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongodb-secret
+data:
+  MONGO_ATLAS_SECRET: M1poMmJDTjVGdWdaMlJoZQ==
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kafka-secret
+data:
+  KAFKA_USERNAME: S1JBVzRKWDc2UklNSzNaNg==
+  KAFKA_SECRET: WWVjaGQ3UHNRTHY0aWo0NnFScE80dXRxUUtoZWdaL0QzRm95b0dueGtGVlpnS1lRUXNnbVBYT1g4bEVyQzBsRA==

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: job-status-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: job-status-service
+  template:
+    metadata:
+      labels:
+        app: job-status-service
+    spec:
+      containers:
+        - name: job-status-service
+          image: dishagundecha99/quantaas-job-status-service:latest
+          resources:
+            limits:
+              memory: "1024Mi"
+              cpu: "1000m"
+          envFrom:
+            - configMapRef:
+                name: minio-configmap 
+            - secretRef:
+                name: minio-secret
+            - secretRef:
+                name: mongodb-secret
+            - secretRef:
+                name: kafka-secret
+          

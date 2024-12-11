@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ui-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ui-service
+  template:
+    metadata:
+      labels:
+        app: ui-service
+    spec:
+      containers:
+        - name: ui-service
+          image: dishagundecha99/quantaas-ui-service:latest
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          env:
+            - name: API_URL
+              value: http://34.139.20.209:5002
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "125m"

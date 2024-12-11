@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-lb
+spec:
+  type: LoadBalancer
+  ports:
+    - name: minio-app-port
+      protocol: TCP
+      port: 9000
+      targetPort: 9000
+    - name: minio-admin-port
+      protocol: TCP
+      port: 9001
+      targetPort: 9001
+  selector:
+    app.kubernetes.io/instance: minio-proj
+    app.kubernetes.io/name: minio

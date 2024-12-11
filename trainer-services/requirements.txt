@@ -1,0 +1,16 @@
+accelerate==0.25.0
+confluent-kafka==2.3.0
+datasets==2.14.4
+evaluate==0.4.1
+jsonpickle==3.0.2
+minio==7.2.0
+rouge-score==0.1.2
+sacrebleu==2.4.0
+safetensors==0.4.1
+# torch==1.12.1
+# torchaudio==0.10.2
+# torchmetrics==0.11.0
+# torchsummary==1.5.1
+# torchvision==0.11.3
+tqdm==4.62.3
+# transformers==4.36.0
