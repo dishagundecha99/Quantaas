@@ -1,0 +1,58 @@
+Video  not more than 9 mins (make it for 6/7 mostly) things to include: 
+Introduces the team members                                5 - Title and list of project participants - Project Goals: What did you accomplish, in terms that should be clear to others in the class
+Provides an overview of the project                      15
+Describes components and their interactions       25
+A specific list of software and hardware components
+An architectural diagram showing the interactions between system components
+A description of the interaction of the different software and hardware components
+Describes testing and debugging                           15
+A description of how you debugged your project and what training or testing mechanism were used.
+Shows off the working system                                15
+Show and Explain the working system, what kind of work load can it handle, where are potential bottlenecks?   to dos:  build a docker image dishagundecha99/quantaas-ui-service:latest
+For testing mention the following in presentation: Why Test Locally with NodePort?
+Quick Validation: NodePort makes your application accessible on a specific port of your local Kubernetes node. This allows you to test the configuration and functionality without relying on cloud infrastructure.
+Avoid Costs: Testing with LoadBalancer on the cloud creates an external load balancer, which may incur costs even if you’re debugging.
+Iterative Debugging: Local testing helps you catch issues early (e.g., misconfigured ports or labels) before deploying to the cloud.
+
+How to Test with NodePort
+Modify Your Service Replace type: LoadBalancer with type: NodePort in your service YAML: yaml Copy code   spec:
+  type: NodePort
+   Kubernetes will automatically assign a port (in the range 30000-32767) to expose your service. Optionally, you can specify a nodePort: yaml Copy code   spec:
+  type: NodePort
+  ports:
+    - name: ui-service-port
+      protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 31000  # Fixed port for testing
+  
+Apply the Service Use kubectl to apply the changes: bash Copy code   kubectl apply -f service.yaml
+  
+Access Your Application
+Run kubectl get services to find the assigned NodePort.
+Access your application using the node's IP and the NodePort. For example:arduino Copy code   http://<NODE_IP>:31000
+  
+If you are using Minikube, get the node IP with:bash Copy code   minikube ip
+  
+Debug and Verify Check logs and endpoints to verify that the application behaves as expected.
+
+Deploying with LoadBalancer
+Once you're satisfied with the NodePort testing:
+Switch type: NodePort back to type: LoadBalancer.
+Deploy on a cloud provider that supports load balancers (AWS, GCP, Azure, etc.).
+Use kubectl get services to get the external IP or DNS of the load balancer.
+
+Summary
+Use NodePort locally for quick validation of your Kubernetes configurations.
+Deploy with LoadBalancer in the cloud for external access.
+This phased approach minimizes costs and ensures functionality before scaling up.
+   logo.png needs to be changed
+Favicon needs to be changed
+All logo ones actually change them
+auth.py, is for user login may be leverage it or remove that functionality from init.py
+Constants.py - change mongoDB details and check others if changes are required, we need to change the upload type from css to pertained model type say we are using some model we will download it and then decide
+Submit job. Py we need to understand the hyper parameter thing and change it based on our idea
+Connection.py we need to change the Kafka and minio credentials
+Dataset.py needs to be changed completely - added changed code in comment, will need to make it compatible with the frontend
+Same with model.py
+Runner.py is currently training the model, we need to call the prune and quant function and then the eval function on all three 
