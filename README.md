@@ -8,6 +8,7 @@ The primary goal of QuantTaaS is to automate model optimization with minimal man
 
 ## Project Contributors
 
+** Final Project Team 92
 - **Nidhi Sankhe**  
 - **Disha Gundecha**
 
