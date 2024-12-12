@@ -1,6 +1,6 @@
 from backend_server import app, session, mongo
 from flask import redirect, url_for, jsonify, request
-
+#TO_DO this needs changes based on what we decide in frontend, do we show previous runs, we can skip or reduce the functionality too and just hardcode some previous runs in frontend
 def best_runs_all(runs):
     best_runs = dict()
     for exp_name in runs:

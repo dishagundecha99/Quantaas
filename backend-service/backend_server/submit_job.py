@@ -81,3 +81,94 @@ def submit_training_job():
         mongo.record_train_meta_data(session.get('user-id'), train_meta_data, exp_name)  
 
     return jsonify({'message':msg}), 200
+
+#TO_DO i am not sure how much we need this as we are not training the models only for testing we will use
+
+'''from backend_server import app, session, constants, minio, kafka, mongo
+from werkzeug.utils import secure_filename
+from flask import request, jsonify
+import json
+from backend_server import model_utils  # (You would have a utility file to handle pruning and quantizing)
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in constants.ALLOWED_EXTENSIONS
+
+def submit_job_payload_validator(req):
+    # Check if user file is there in payload
+    if not req.files:
+        return 'Valid model file needs to be uploaded', False
+    if 'pretrained_model' not in req.files:
+        return 'Invalid key for uploading pre-trained model file', False
+    
+    # Check if it is a valid file type (i.e., model file, can be .h5, .pth, etc.)
+    file = request.files['pretrained_model']
+    filename = secure_filename(file.filename)
+    if not(allowed_file(filename)):
+        return 'User can only upload valid model files', False
+    
+    # Check for validity of form data (parameters that are required)
+    model_meta_data = ['exp_name', 'task_type', 'test_data']
+    for key in model_meta_data:
+        if key not in request.form:
+            return f'{key} not found in request payload', False
+    return 'Valid Payload', True
+
+
+@app.route('/submit-job', methods=['POST'])
+def submit_evaluation_job():
+    if 'user-id' not in session:
+        session['user-id'] = request.form.get('user-id')
+    
+    msg, is_payload_valid = submit_job_payload_validator(request)
+    if not is_payload_valid:
+        return jsonify({'message': msg}), 400
+
+    # Get the pretrained model and test data from the payload
+    pretrained_model_file = request.files['pretrained_model']
+    test_data_file = request.files['test_data']  # Assuming test data is also uploaded
+
+    # Upload files to MinIO
+    minio.upload_model(session.get('user-id'), pretrained_model_file)
+    minio.upload_dataset(session.get('user-id'), test_data_file)
+
+    # Extract information from the request
+    exp_name = request.form.get('exp_name')
+    task_type = request.form.get('task_type')
+    test_data_filename = secure_filename(test_data_file.filename)
+
+    # Prepare the metadata for the models (original, pruned, quantized)
+    model_metadata = {
+        "exp_name": exp_name,
+        "task_type": task_type,
+        "test_data": test_data_filename,
+        "user_id": session.get('user-id'),
+        "pretrained_model_filename": pretrained_model_file.filename,
+    }
+
+    # Perform model pruning and quantization
+    pruned_model = model_utils.prune_model(pretrained_model_file)
+    quantized_model = model_utils.quantize_model(pretrained_model_file)
+
+    # Save or upload pruned and quantized models
+    pruned_model_filename = f"{exp_name}_pruned_model.h5"
+    quantized_model_filename = f"{exp_name}_quantized_model.h5"
+    minio.upload_model(session.get('user-id'), pruned_model, pruned_model_filename)
+    minio.upload_model(session.get('user-id'), quantized_model, quantized_model_filename)
+
+    # Evaluate models (original, pruned, quantized) on the test data
+    evaluation_results = {}
+
+    # Run the models on the test dataset and collect evaluation results
+    evaluation_results['original'] = model_utils.evaluate_model(pretrained_model_file, test_data_file)
+    evaluation_results['pruned'] = model_utils.evaluate_model(pruned_model, test_data_file)
+    evaluation_results['quantized'] = model_utils.evaluate_model(quantized_model, test_data_file)
+
+    # Save the evaluation results to MongoDB
+    mongo.record_evaluation_results(session.get('user-id'), exp_name, evaluation_results)
+
+    # Publish the results to Kafka (if required for asynchronous processing or logging)
+    kafka.push_to_topic(json.dumps(evaluation_results))
+
+    return jsonify({'message': 'Evaluation job submitted successfully', 'results': evaluation_results}), 200
+'''

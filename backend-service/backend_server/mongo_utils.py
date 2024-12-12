@@ -4,11 +4,58 @@ from pymongo import MongoClient
 
 
 mongo_cluster = MongoClient(constants.MONGO_CONNECTION)
-mongo_db = mongo_cluster['HypTAAS']
+mongo_db = mongo_cluster['QuanTAAS']
 mongo_collection = mongo_db['userinfo']
 
 def create_user_doc(user_id):
     mongo_collection.insert_one({'user_id': user_id,'runs': {}})
+
+#TO_DO we don't need runs concept 
+    '''from backend_server import constants
+import pymongo
+from pymongo import MongoClient
+
+# MongoDB setup
+mongo_cluster = MongoClient(constants.MONGO_CONNECTION)
+mongo_db = mongo_cluster['HypTAAS']
+mongo_collection = mongo_db['userinfo']
+
+# Create or find user document
+def create_user_doc(user_id):
+    mongo_collection.insert_one({
+        'user_id': user_id,
+        'models': {
+            'pretrained': None,
+            'pruned': None,
+            'quantized': None
+        }
+    })
+
+def find_or_create_user_doc(user_id):
+    user_doc = mongo_collection.find_one({'user_id': user_id})
+    if not user_doc:
+        create_user_doc(user_id)
+
+# Record model paths for the user
+def record_model_paths(user_id, pretrained_model_path, pruned_model_path, quantized_model_path):
+    find_or_create_user_doc(user_id)
+    mongo_collection.update_one(
+        {'user_id': user_id},
+        {'$set': {
+            'models.pretrained': pretrained_model_path,
+            'models.pruned': pruned_model_path,
+            'models.quantized': quantized_model_path
+        }}
+    )
+
+# Get model details for the user
+def get_model_details(user_id):
+    user_doc = mongo_collection.find_one({'user_id': user_id})
+    if user_doc:
+        return user_doc.get('models', {})
+    return None
+
+'''
 
 def find_or_create_user_doc(user_id):
     user_doc = mongo_collection.find_one({'user_id': user_id})

@@ -28,3 +28,41 @@ def upload_dataset(user_id, file):
 
 def download_model_file(bucket, object_name, file_path):
     minio_client.fget_object(bucket, object_name, file_path)
+
+    #TO_DO these need to be added as we are also uploading pretrained model and for download we have 3 model dowbload options.
+
+    '''
+   def upload_pretrained_model(user_id, file):
+    """
+    Upload the pretrained model to the user's MinIO bucket.
+    """
+    user_bucket_name = get_user_bucket_name(user_id)
+    prepare_user_bucket(user_bucket_name)
+    
+    # Secure the filename
+    filename = secure_filename(file.filename)
+    
+    # Store the pretrained model in the "models/" folder
+    file_path = f'models/{filename}'
+    
+    size = os.fstat(file.fileno()).st_size
+    minio_client.put_object(user_bucket_name, file_path, file, size)
+
+    def download_model(user_id, model_type, model_filename, local_file_path):
+    """
+    Download a specific model (pretrained, pruned, quantized) from MinIO to a local file.
+    """
+    user_bucket_name = get_user_bucket_name(user_id)
+    
+    # Define the model type path (pretrained, pruned, quantized)
+    model_prefix = f'models/{model_type}/'
+    
+    # Full path to the model file in the bucket
+    object_name = os.path.join(model_prefix, model_filename)
+    
+    # Download the model file from MinIO to the local path
+    minio_client.fget_object(user_bucket_name, object_name, local_file_path)
+
+
+
+'''
