@@ -1,3 +1,75 @@
+# QuantTaaS: Quantization and Pruning as a Service
+
+## Project Overview
+
+**QuantTaaS** (Quantization and Pruning as a Service) is a cloud-based platform designed to optimize deep learning models by applying quantization and pruning techniques. The service allows users to upload pre-trained models and apply model compression strategies to reduce their size and improve deployment on resource-constrained environments, such as IoT devices, mobile platforms, and edge devices.
+
+The primary goal of QuantTaaS is to automate model optimization with minimal manual effort, providing real-time insights into the impact of various optimization strategies on model performance. Through the service, users can upload pre-trained models, run optimizations (quantization and pruning), and evaluate the resulting models based on accuracy and size.
+
+## Project Contributors
+
+- **Nidhi Sankhe**  
+- **Disha Gundecha**
+
+## Key Features
+
+- **Pre-trained Model Upload**: Users can upload pre-trained models to the platform for optimization.
+- **Pruning**: The model can be pruned to reduce unnecessary weights, enhancing both efficiency and speed.
+- **Quantization**: The model can be quantized to reduce precision, making it more suitable for deployment on edge devices.
+- **Model Evaluation**: Post-optimization, the platform evaluates the accuracy and model size of the original, pruned, and quantized models on a provided test dataset.
+- **Real-Time Visualization**: Users can visualize the effects of pruning and quantization on the model’s accuracy and size.
+
+## Technologies Used
+
+### Software Components:
+- **Frontend**: 
+  - React: For a responsive, intuitive user interface.
+- **Backend**:
+  - Flask: To handle user requests and API endpoints.
+  - Google Cloud Storage: For storing uploaded models and optimized model artifacts.
+  - Google Cloud Functions: For executing model optimization tasks.
+- **Model Optimization Libraries**:
+  - TensorRT: For model quantization and optimization.
+  - PyTorch Quantization Toolkit: For additional pruning and quantization functionalities.
+- **Experimentation Tools**:
+  - Ray/Dask: For parallel experimentation with different pruning and quantization configurations.
+- **Visualization**:
+  - Matplotlib: To visualize model performance changes after optimization.
+
+### Hardware Components:
+- **Google Cloud GPU Instances**: For model optimization tasks that require high computational power.
+
+## Project Architecture
+
+1. **Frontend Interaction**: Users upload pre-trained models and configure optimization parameters (e.g., pruning percentage, quantization level) through a React-based UI.
+2. **Backend and Cloud Integration**:
+   - The Flask backend manages the requests and invokes Google Cloud Functions to process models.
+   - Google Cloud Storage stores both the original and optimized model files.
+3. **Model Optimization**:
+   - TensorRT and PyTorch Quantization Toolkit are used to optimize the models.
+   - Ray/Dask handles the parallel execution of various pruning and quantization configurations.
+4. **Evaluation and Visualization**:
+   - Models are evaluated on the test dataset provided by the user.
+   - Accuracy and model size are compared before and after optimization using Matplotlib for visualization.
+
+## How to Deploy the Project
+
+### Prerequisites
+
+Before deploying the project, make sure you have the following setup:
+1. **Google Cloud Account**: Set up a Google Cloud project with access to GPU instances, Google Cloud Storage, and Cloud Functions.
+2. **Docker**: For containerizing the application.
+3. **Python**: Ensure that Python 3.x is installed along with the required dependencies.
+
+### Deployment Steps
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/your-repository/quanttaas.git
+   cd quanttaas
+
+
+
 # QuantTaaS
 
 
