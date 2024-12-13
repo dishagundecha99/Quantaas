@@ -11,6 +11,8 @@ import torch.quantization as quant
 import evaluate
 import numpy as np
 import json
+from datasets import load_metric
+import subprocess
 
 
 class CustomTrainer:
