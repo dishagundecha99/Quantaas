@@ -10,7 +10,7 @@ def current_run():
     prev_runs = mongo.get_all_runs(session.get('user-id'))
     for exp_name in prev_runs:
         for trial in prev_runs.get(exp_name):
-            if trial.get('training'): #TO_DO this is ok, just make sure your training value is set when we are pruning or quantizing the model
+            if trial.get('pruning_in_progress') or trial.get('quantization_in_progress'): #TO_DO this is ok, just make sure your training value is set when we are pruning or quantizing the model
                 data = {'message': f'{exp_name} is currently running',
                         'current-run': prev_runs.get(exp_name)}
                 return jsonify(data), 200

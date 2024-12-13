@@ -1,7 +1,7 @@
-#TO_DO WORK NEEDED
 from backend_server import app, session, mongo
 from flask import redirect, url_for, jsonify, request
-#TO_DO this needs changes based on what we decide in frontend, do we show previous runs, we can skip or reduce the functionality too and just hardcode some previous runs in frontend
+
+# Function to get the best evaluation (by accuracy) across different models (original, pruned, quantized) for each experiment
 def best_runs_all(runs):
     best_runs = dict()
     for exp_name in runs:
@@ -9,13 +9,15 @@ def best_runs_all(runs):
         best_runs[exp_name] = best_trial
     return best_runs
 
+# Function to determine the best model based on accuracy (could be pruned, quantized, or original)
 def best_run_exp(exp_name, runs):
-    best_trial = f'{exp_name}_{0}'
-    best_accuracy = float(runs[0].get('accuracy'))
+    best_trial = f'{exp_name}_{0}'  # Default best trial is the first run
+    best_accuracy = float(runs[0].get('accuracy', 0))  # Default to 0 if accuracy not found
     for trial in runs:
-        if float(trial.get('accuracy')) > best_accuracy:
-            best_trial = trial.get('exp_id')
-            best_accuracy = trial.get('accuracy')
+        accuracy = float(trial.get('accuracy', 0))  # Get accuracy or default to 0
+        if accuracy > best_accuracy:
+            best_trial = trial.get('exp_id')  # Get the exp_id for the best trial
+            best_accuracy = accuracy
     return best_trial
 
 @app.route('/prev-runs', defaults={'expname': None}, methods=['GET'])
@@ -26,38 +28,45 @@ def prev_runs(expname):
 
     prev_runs = mongo.get_all_runs(session.get('user-id'))
     running_keys = list()
+
+    # Remove experiments that are still in progress (if any)
     for exp in prev_runs:
         remove_key = False
         print(prev_runs)
         for trial in prev_runs.get(exp):
             print(trial)
-            if trial.get('training'):
+            # No need to check for 'training', instead check if pruning or quantization is in progress
+            if trial.get('pruning_in_progress') or trial.get('quantization_in_progress'):
                 remove_key = True
                 break
         if remove_key:
             running_keys.append(exp)
+
+    # Remove the experiments that are still running from prev_runs
     for exp in running_keys:
         prev_runs.pop(exp)
+
     if len(prev_runs.keys()) == 0:
         data = {'message': 'No previous experiments were found'}
         return jsonify(data), 200
     elif expname is None:
+        # Return all experiments and their evaluations
         data = {
             'message': f'found {len(prev_runs.keys())} experiments',
             'runs': prev_runs,
             'best_runs': best_runs_all(prev_runs)
-            }
+        }
         return jsonify(data), 200
     else:
+        # If an experiment name is provided, return only that experiment's data
         if expname not in prev_runs:
-            data = {'message': 'given experiment name does not exist'}
+            data = {'message': 'Given experiment name does not exist'}
             return jsonify(data), 200
         else:
+            # Return specific experiment with best evaluations for each model (original, pruned, quantized)
             data = {
-                'message': 'found exp',
+                'message': 'Found experiment',
                 'runs': prev_runs.get(expname),
                 'best_runs': {expname: best_run_exp(expname, prev_runs.get(expname))}
-                }
+            }
             return jsonify(data), 200
-
-

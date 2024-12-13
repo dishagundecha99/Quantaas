@@ -13,14 +13,8 @@ def submit_job_paylod_validator(req):
     # check if user file is there in payload
     if not req.files:
         return 'Valid file needs to be uploaded', False
-    if 'pretrained_model_user_file' not in req.files or 'test_user_file' not in req.files:
+    if 'test_user_file' not in req.files:
         return 'Invalid key for uploading user file', False
-    
-    # check if it is a valid file type
-    file = request.files['pretrained_model_user_file']
-    filename = secure_filename(file.filename)
-    if not(allowed_file(filename)):
-        return 'User can only upload valid files', False
     
     # check if it is a valid file type
     file = request.files['test_user_file']
@@ -35,7 +29,87 @@ def submit_job_paylod_validator(req):
             return f'{key} not found in request payload', False
     return 'Valid Payload', True
 
+@app.route('/submit-job', methods=['POST'])
+def submit_model_processing_job():
+    if 'user-id' not in session:
+        session['user-id'] = request.form.get('user-id')
+    
+    # Validate payload
+    msg, is_payload_valid = submit_job_paylod_validator(request)
+    if not is_payload_valid:
+        return jsonify({'message': msg}), 400
+    
+    test_file = request.files['test_user_file']
+    minio.upload_dataset(session.get('user-id'), test_file)
+    
+    # Collect metadata from request
+    exp_name = request.form.get('exp_name')
+    model_name = request.form.get('model_name')
+    task_type = request.form.get('task_type')
 
+    # Prepare metadata for MongoDB and Kafka
+    model_meta_data = {
+        'exp_id': exp_name,
+        'task_type': task_type,
+        'model_name': model_name,
+        'test_dataset': secure_filename(test_file.filename),
+        'minio_bucket': minio.get_user_bucket_name(session.get('user-id')),
+        'user_id': session.get('user-id'),
+        'pruning': {
+            'status': 'pending',
+            'pruned_model_path': None,
+            'pruned_model_accuracy': None,
+            'pruned_model_size': None,
+        },
+        'quantization': {
+            'status': 'pending',
+            'quantized_model_path': None,
+            'quantized_model_accuracy': None,
+            'quantized_model_size': None,
+        },
+        'evaluation': {
+            'original_model_accuracy': None,
+            'original_model_size': None,
+        },
+    }
+
+    # Push tasks to Kafka
+    kafka.push_to_topic(json.dumps({
+        'action': 'evaluate_original',
+        'model_name': model_name,
+        'exp_id': exp_name,
+        'user_id': session.get('user-id'),
+        'test_dataset': model_meta_data['test_dataset'],
+    }))
+
+    kafka.push_to_topic(json.dumps({
+        'action': 'prune_model',
+        'model_name': model_name,
+        'exp_id': exp_name,
+        'user_id': session.get('user-id'),
+        'test_dataset': model_meta_data['test_dataset'],
+    }))
+
+    kafka.push_to_topic(json.dumps({
+        'action': 'quantize_model',
+        'model_name': model_name,
+        'exp_id': exp_name,
+        'user_id': session.get('user-id'),
+        'test_dataset': model_meta_data['test_dataset'],
+    }))
+
+    # Record metadata in MongoDB
+    mongo.record_train_meta_data(
+        session.get('user-id'), 
+        model_meta_data, 
+        exp_name
+    )
+
+    return jsonify({'message': 'Job submitted successfully'}), 200
+
+#TO_DO i am not sure how much we need this as we are not training the models only for testing we will use
+
+'''
 @app.route('/submit-job', methods=['POST'])
 def submit_training_job():
     if 'user-id' not in session:
@@ -46,15 +120,13 @@ def submit_training_job():
         return jsonify({'message':msg}), 400
     
     test_file = request.files['test_user_file']
-    pretrained_model_file = request.files['pretrained_model_user_file']
 
     minio.upload_dataset(session.get('user-id'), test_file)
-    minio.upload_pretrained_model(session.get('user-id'), pretrained_model_file)
     
     exp_name = request.form.get('exp_name')
     task_type = request.form.get('task_type')
     model_name = request.form.get('model_name')
-    hyperparams = json.loads(request.form.get('hyperparams'))
+  #  hyperparams = json.loads(request.form.get('hyperparams'))
 
     valid_hp_keys, valid_hps = list(), list()
     for key in hyperparams:
@@ -81,9 +153,7 @@ def submit_training_job():
 
     return jsonify({'message':msg}), 200
 
-#TO_DO i am not sure how much we need this as we are not training the models only for testing we will use
-
-'''from backend_server import app, session, constants, minio, kafka, mongo
+from backend_server import app, session, constants, minio, kafka, mongo
 from werkzeug.utils import secure_filename
 from flask import request, jsonify
 import json
