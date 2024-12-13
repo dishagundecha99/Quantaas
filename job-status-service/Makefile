@@ -1,5 +1,5 @@
 VERSION=v1
-DOCKERUSER=dishagundecha99
+DOCKERUSER=nidhisankhe1
 
 build:
 	docker build -f Dockerfile -t quantaas-job-status-service .

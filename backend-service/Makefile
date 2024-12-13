@@ -1,11 +1,11 @@
 VERSION=v1
-DOCKERUSER=dishagundecha99
+DOCKERUSER=nidhisankhe1
 
 build:
-	docker build -f Dockerfile -t hyptaas-backend-service .
+	docker build -f Dockerfile -t quantaas-backend-service .
 
 push:
-	docker tag hyptaas-backend-service $(DOCKERUSER)/hyptaas-backend-service:$(VERSION)
-	docker push $(DOCKERUSER)/hyptaas-backend-service:$(VERSION)
-	docker tag hyptaas-backend-service $(DOCKERUSER)/hyptaas-backend-service:latest
-	docker push $(DOCKERUSER)/hyptaas-backend-service:latest
+	docker tag quantaas-backend-service $(DOCKERUSER)/quantaas-backend-service:$(VERSION)
+	docker push $(DOCKERUSER)/quantaas-backend-service:$(VERSION)
+	docker tag quantaas-backend-service $(DOCKERUSER)/quantaas-backend-service:latest
+	docker push $(DOCKERUSER)/quantaas-backend-service:latest

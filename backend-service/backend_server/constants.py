@@ -3,7 +3,7 @@ import secrets
 
 # Flask configs
 FLASK_SECRET = os.getenv('FLASK_SECRET') or secrets.token_hex()
-ALLOWED_EXTENSIONS = ['csv']#TO_DO Change the format allowed to csv and the pretrained model format
+ALLOWED_EXTENSIONS = ['csv']
 MODEL_SAVE_FOLDER = 'models'
 
 # Google Oauth configs

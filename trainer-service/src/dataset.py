@@ -4,14 +4,11 @@ import ast
 
 class LoadDataset():
     '''
-    LoadDataset class used for loading the train, valid, and test dataset into memory
+    LoadDataset class used for loading the test dataset into memory
     '''
-    def __init__(self, train_path, test_path, model, task_type, val_split=False, valid_path=None) -> None:
-        self.train_dataset = train_path
+    def __init__(self, test_path, model, task_type) -> None:
         self.test_dataset = test_path
         self.model = model
-        self.val_split = val_split
-        self.valid_dataset = valid_path
         self.task_type = task_type
         self.process()
 
@@ -90,35 +87,29 @@ class LoadDataset():
 
     def process(self):
         # Read datasets into HuggingFace data object
-        train_dataset = load_dataset("csv", data_files=self.train_dataset).shuffle(seed=42)
-        test_dataset = load_dataset("csv", data_files=self.test_dataset).shuffle(seed=42)
-        if self.val_split == True:
-            valid_dataset = load_dataset("csv", data_files=self.valid_dataset).shuffle(seed=42)
-        print(train_dataset, test_dataset)
+        test_dataset = load_dataset("csv", data_files=self.test_dataset)
 
         if self.task_type == "classification":
-            self.tokenized_train = train_dataset.map(self.preprocess_function_sentiment, batched=True)["train"]
-            self.tokenized_test = test_dataset.map(self.preprocess_function_sentiment, batched=True)["train"]
+            self.tokenized_test = test_dataset.map(self.preprocess_function_sentiment, batched=True)
             print("Safely loaded datasets")
             self.data_collator = DataCollatorWithPadding(tokenizer=self.model.tokenizer)
         elif self.task_type == "questionanswering":
-            self.tokenized_train = train_dataset.map(self.preprocess_function_qa, batched=True, remove_columns=train_dataset["train"].column_names)["train"]
-            self.tokenized_test = test_dataset.map(self.preprocess_function_qa, batched=True, remove_columns=test_dataset["train"].column_names)["train"]
+            self.tokenized_test = test_dataset.map(self.preprocess_function_qa, batched=True)
             print("Safely loaded datasets")
             self.data_collator = DefaultDataCollator()
         elif self.task_type == "machinetranslation":
-            self.tokenized_train = train_dataset.map(self.preprocess_function_mt, batched=True)["train"]
-            self.tokenized_test = test_dataset.map(self.preprocess_function_mt, batched=True)["train"]
+            self.tokenized_test = test_dataset.map(self.preprocess_function_mt, batched=True)
             print("Safely loaded datasets")
             self.data_collator = DataCollatorForSeq2Seq(tokenizer=self.model.tokenizer, model=self.model.model_name)
         elif self.task_type == "summarization":
-            self.tokenized_train = train_dataset.map(self.preprocess_function_s, batched=True)["train"]
-            self.tokenized_test = test_dataset.map(self.preprocess_function_s, batched=True)["train"]
+            self.tokenized_test = test_dataset.map(self.preprocess_function_s, batched=True)
             print("Safely loaded datasets")
             self.data_collator = DataCollatorForSeq2Seq(tokenizer=self.model.tokenizer)
         else:
             print("None of the NLP tasks selected!")
             pass
+
+
 '''from transformers import DefaultDataCollator, DataCollatorWithPadding, DataCollatorForSeq2Seq
 from datasets import load_dataset
 import ast
