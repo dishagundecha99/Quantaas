@@ -12,15 +12,15 @@ def allowed_file(filename):
 def submit_job_paylod_validator(req):
     # check if user file is there in payload
     if not req.files:
-        return 'Valied csv file needs to be uploaded', False
-    if 'train_user_file' not in req.files or 'test_user_file' not in req.files:
+        return 'Valid file needs to be uploaded', False
+    if 'pretrained_model_user_file' not in req.files or 'test_user_file' not in req.files:
         return 'Invalid key for uploading user file', False
     
     # check if it is a valid file type
-    file = request.files['train_user_file']
+    file = request.files['pretrained_model_user_file']
     filename = secure_filename(file.filename)
     if not(allowed_file(filename)):
-        return 'User can only upload valid csv files', False
+        return 'User can only upload valid files', False
     
     # check if it is a valid file type
     file = request.files['test_user_file']
@@ -28,8 +28,8 @@ def submit_job_paylod_validator(req):
     if not(allowed_file(filename)):
         return 'User can only upload valid csv files', False
     
-    # check for validity form data
-    model_meta_data = ['exp_name', 'task_type', 'hyperparams', 'model_name']
+    # check for validity form data #TO_DO change this we don't need all this data
+    model_meta_data = ['exp_name']
     for key in model_meta_data:
         if key not in request.form:
             return f'{key} not found in request payload', False
@@ -45,11 +45,11 @@ def submit_training_job():
     if not is_payload_valid:
         return jsonify({'message':msg}), 400
     
-    train_file = request.files['train_user_file']
     test_file = request.files['test_user_file']
+    pretrained_model_file = request.files['pretrained_model_user_file']
 
-    minio.upload_dataset(session.get('user-id'), train_file)
     minio.upload_dataset(session.get('user-id'), test_file)
+    minio.upload_pretrained_model(session.get('user-id'), pretrained_model_file)
     
     exp_name = request.form.get('exp_name')
     task_type = request.form.get('task_type')
@@ -69,7 +69,6 @@ def submit_training_job():
         train_meta_data['exp_id'] = f'{exp_name}_{i}'
         train_meta_data['task_type'] = task_type
         train_meta_data['model_name'] = model_name
-        train_meta_data['train_dataset'] = secure_filename(train_file.filename)
         train_meta_data['test_dataset'] = secure_filename(test_file.filename)
         train_meta_data['hyperparams'] = dict()
         train_meta_data['minio_bucket'] = minio.get_user_bucket_name(session.get('user-id'))

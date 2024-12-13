@@ -19,13 +19,13 @@ minioPasswd = os.getenv("MINIO_PASSWD") or "minioadmin"
 # Confluent Kafka configs
 KAFKA_USERNAME = os.getenv("KAFKA_USERNAME")
 KAFKA_SECRET = os.getenv("KAFKA_SECRET")
-KAFKA_BOOTSTRAP_SERVER = "pkc-4r087.us-west2.gcp.confluent.cloud"
-# KAFKA_SUBMIT_JOB_TOPIC = 'demo'
+KAFKA_BOOTSTRAP_SERVER = "pkc-4r087.us-west2.gcp.confluent.cloud" #TO_DO this is to be done post creating the kafka cluster 
+# KAFKA_SUBMIT_JOB_TOPIC = 'demo' #TO_DO i think they scammed by creating a new file here
 KAFKA_SUBMIT_JOB_TOPIC = 'submit_job'
 
 # Mongo configs
 MONGO_ATLAS_SECRET = os.getenv("MONGO_ATLAS_SECRET")
-MONGO_CONNECTION = f'mongodb+srv://HypTAASuser:{MONGO_ATLAS_SECRET}@hyptaas.wqjqmye.mongodb.net/?retryWrites=true&w=majority'
+MONGO_CONNECTION = f'mongodb+srv://HypTAASuser:{MONGO_ATLAS_SECRET}@hyptaas.wqjqmye.mongodb.net/?retryWrites=true&w=majority'#TO_DO I am creating new quantaas cluster we will change this after cluster creation
 
 # Redis configs
 REDISHOST = os.getenv("REDISTOGO_URL") or "localhost"
