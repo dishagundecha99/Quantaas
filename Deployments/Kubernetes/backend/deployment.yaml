@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: backend-service
-          image: dishagundecha99/quantaas-backend-service:gke
+          image: nidhisankhe1/quantaas-backend-service:gke
           ports:
             - containerPort: 5002
               protocol: TCP

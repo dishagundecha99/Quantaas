@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: job-status-service
-          image: dishagundecha99/quantaas-job-status-service:latest
+          image: nidhisankhe1/quantaas-job-status-service:latest
           resources:
             limits:
               memory: "1024Mi"

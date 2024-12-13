@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: ui-service
-          image: dishagundecha99/quantaas-ui-service:latest
+          image: nidhisankhe1/quantaas-ui-service:latest
           ports:
             - containerPort: 80
               protocol: TCP
