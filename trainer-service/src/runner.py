@@ -57,9 +57,6 @@ class trainEvalRunner():
         task_type = value["task_type"]
         repo_name = value["exp_id"]
         model_name = value["model_name"]
-        hyperparams = value["hyperparams"]
-
-        train_path = value["train_dataset"]
         test_path = value["test_dataset"]
         minio_bucket = value["minio_bucket"]
 
@@ -75,12 +72,12 @@ class trainEvalRunner():
         
         # read data from Minio and store locally
         try:
-            self.connection.read_minio_data(train_path, test_path, minio_bucket, save_path)
+            self.connection.read_minio_data(test_path, minio_bucket, save_path)
         except:
             raise Exception("Unable to read data from Minio")
 
         # load train and test datasets for the model
-        dataset = LoadDataset(train_path=save_path+train_path,
+        dataset = LoadDataset(
                             test_path=save_path+test_path,
                             model=model_c,
                             task_type=task_type)
@@ -89,14 +86,13 @@ class trainEvalRunner():
 
         # train the model
         trainer = CustomTrainer(repo_name=save_path+repo_name,
-                                hyperparameters=hyperparams,
                                 tokenizer=tokenizer,
                                 model=model,
                                 dataset=dataset)
-
-        # trainer.train()
-        # trainer.evaluate()
-        # trainer.save(save_path=save_path,
+        #pruned_model = trainer.applyprune()
+        #quantized_model = trainer.applyquant()
+        # trainer.evaluate_all_models(pruned_model, quantized_model)
+        # trainer.save_all_models(pruned_model, quantized_model, save_path=save_path,
         #              repo_name=repo_name)
 
         # create the final metrics and prepare to return

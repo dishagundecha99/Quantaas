@@ -28,20 +28,6 @@ def upload_dataset(user_id, file):
 
 def download_model_file(bucket, object_name, file_path):
     minio_client.fget_object(bucket, object_name, file_path)
-  #TO_DO new functionality added so this needs to be added at other places not added in test scripts
-'''
-not needed now incase we are using libraries for pretrained models
-def upload_pretrained_model(user_id, file):
-    """
-    Upload the pretrained model to the user's MinIO bucket.
-    """
-    user_bucket_name = get_user_bucket_name(user_id)
-    prepare_user_bucket(user_bucket_name)
-    filename = secure_filename(file.filename)
-    file_path = f'models/{filename}'
-    size = os.fstat(file.fileno()).st_size
-    minio_client.put_object(user_bucket_name, file_path, file, size)
 
-  '''
 
  

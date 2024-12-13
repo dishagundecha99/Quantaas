@@ -29,6 +29,7 @@ def submit_job_paylod_validator(req):
             return f'{key} not found in request payload', False
     return 'Valid Payload', True
 
+#TO_DO i am not sure how much we need this as we are not training the models only for testing we will use
 @app.route('/submit-job', methods=['POST'])
 def submit_model_processing_job():
     if 'user-id' not in session:
@@ -47,7 +48,7 @@ def submit_model_processing_job():
     model_name = request.form.get('model_name')
     task_type = request.form.get('task_type')
 
-    # Prepare metadata for MongoDB and Kafka
+    # Prepare metadata for the job
     model_meta_data = {
         'exp_id': exp_name,
         'task_type': task_type,
@@ -55,50 +56,33 @@ def submit_model_processing_job():
         'test_dataset': secure_filename(test_file.filename),
         'minio_bucket': minio.get_user_bucket_name(session.get('user-id')),
         'user_id': session.get('user-id'),
-        'pruning': {
-            'status': 'pending',
-            'pruned_model_path': None,
-            'pruned_model_accuracy': None,
-            'pruned_model_size': None,
-        },
-        'quantization': {
-            'status': 'pending',
-            'quantized_model_path': None,
-            'quantized_model_accuracy': None,
-            'quantized_model_size': None,
-        },
         'evaluation': {
             'original_model_accuracy': None,
             'original_model_size': None,
+            'status': 'pending',
+        },
+        'pruning': {
+            'pruned_model_accuracy': None,
+            'pruned_model_size': None,
+            'pruned_model_path': None,
+            'status': 'pending',
+        },
+        'quantization': {
+            'quantized_model_accuracy': None,
+            'quantized_model_size': None,
+            'quantized_model_path': None,
+            'status': 'pending',
         },
     }
 
-    # Push tasks to Kafka
+    # Combine all tasks into a single Kafka message
     kafka.push_to_topic(json.dumps({
-        'action': 'evaluate_original',
-        'model_name': model_name,
-        'exp_id': exp_name,
-        'user_id': session.get('user-id'),
-        'test_dataset': model_meta_data['test_dataset'],
+        'action': 'process_model',
+        'job_id': f"job_{exp_name}_{session.get('user-id')}",
+        'metadata': model_meta_data,
     }))
 
-    kafka.push_to_topic(json.dumps({
-        'action': 'prune_model',
-        'model_name': model_name,
-        'exp_id': exp_name,
-        'user_id': session.get('user-id'),
-        'test_dataset': model_meta_data['test_dataset'],
-    }))
-
-    kafka.push_to_topic(json.dumps({
-        'action': 'quantize_model',
-        'model_name': model_name,
-        'exp_id': exp_name,
-        'user_id': session.get('user-id'),
-        'test_dataset': model_meta_data['test_dataset'],
-    }))
-
-    # Record metadata in MongoDB
+    # Record metadata in MongoDB (status is pending for all steps initially)
     mongo.record_train_meta_data(
         session.get('user-id'), 
         model_meta_data, 
@@ -106,8 +90,6 @@ def submit_model_processing_job():
     )
 
     return jsonify({'message': 'Job submitted successfully'}), 200
-
-#TO_DO i am not sure how much we need this as we are not training the models only for testing we will use
 
 '''
 @app.route('/submit-job', methods=['POST'])

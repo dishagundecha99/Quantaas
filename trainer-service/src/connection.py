@@ -50,13 +50,13 @@ class readWriteMinioKafka():
         else:
             print(f'Produced event to topic {msg.topic()} value = {msg.value().decode("utf-8")}')
 
-    def read_minio_data(self, pretrained_model_path, test_path, minio_bucket, save_path):
-        print("Downloading the files", pretrained_model_path, test_path)
+    def read_minio_data(self, test_path, minio_bucket, save_path):
+        print("Downloading the files", test_path)
 
         # shutil.rmtree(save_path)
         os.makedirs(save_path, exist_ok=True)
 
-        self.MINIO_CLIENT.fget_object(minio_bucket, "datasets/" + pretrained_model_path, save_path + pretrained_model_path)
+
         self.MINIO_CLIENT.fget_object(minio_bucket, "datasets/" + test_path, save_path + test_path)
 
         print("Placed file in temporary location", save_path)

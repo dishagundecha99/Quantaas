@@ -27,17 +27,18 @@ def find_or_create_exp_doc(user_id, exp_name):
             }}
         )
 #TO_DO here we can add train_meta_data differently i am not sure what all to add yet, but we can have the file paths to pruned model and stuff or just keep it like this
-def record_train_meta_data(user_id, train_meta_data, exp_name):
+def record_train_meta_data(user_id, model_meta_data, exp_name):
     find_or_create_user_doc(user_id)
     find_or_create_exp_doc(user_id, exp_name)
-    train_meta_data['accuracy'] = 0.0
-    train_meta_data['training'] = True
-    train_meta_data['model_filename'] = ''
+    model_meta_data['evaluation'] = {0.0,0,True}
+    model_meta_data['pruning'] = {0.0,0,None,True}
+    model_meta_data['quantization'] = {0.0,0,None, True}
+    model_meta_data['model_name'] = ''
     update_key = f'runs.{exp_name}'
     mongo_collection.update_one(
         {'user_id': user_id},
         {'$push': {
-            update_key: train_meta_data
+            update_key: model_meta_data
         }}
     )
 

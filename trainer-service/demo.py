@@ -64,7 +64,6 @@ def evaluate_models(value): #train(value)
     task_type = value["task_type"]
     repo_name = value["exp_id"]
     model_name = value["model_name"]
-    train_path = value["train_dataset"]
     test_path = value["test_dataset"]
     minio_bucket = value["minio_bucket"]
     save_path = "./outputs/"
@@ -72,8 +71,8 @@ def evaluate_models(value): #train(value)
 
     # Load model and dataset
     model_c = LoadModel(device=device, tokenizer_name=tokenizer_name, model_name=model_name, task_type=task_type)
-    read_minio_data(train_path, test_path, minio_bucket, save_path)
-    dataset = LoadDataset(train_path=save_path + train_path, test_path=save_path + test_path, model=model_c, task_type=task_type)
+    read_minio_data(test_path, minio_bucket, save_path)
+    dataset = LoadDataset(test_path=save_path + test_path, model=model_c, task_type=task_type)
 
     tokenizer, model = model_c.get_model()
 
@@ -127,7 +126,7 @@ def zip_model(save_path, repo_name):
     shutil.make_archive(save_path + "/" + repo_name, 'zip', save_path)
     print(f"Model saved and zipped at {save_path}/{repo_name}.zip")
 
-def read_minio_data(train_path, test_path, minio_bucket, save_path):
+def read_minio_data(test_path, minio_bucket, save_path):
     minioHost = os.getenv("MINIO_HOST") or "localhost:9000"
     minioUser = os.getenv("MINIO_USER") or "minioadmin"
     minioPasswd = os.getenv("MINIO_PASSWD") or "minioadmin"
@@ -135,7 +134,6 @@ def read_minio_data(train_path, test_path, minio_bucket, save_path):
     MINIO_CLIENT = Minio(minioHost, access_key=minioUser, secret_key=minioPasswd, secure=False)
     os.makedirs(save_path, exist_ok=True)
 
-    MINIO_CLIENT.fget_object(minio_bucket, "datasets/" + train_path, save_path + train_path)
     MINIO_CLIENT.fget_object(minio_bucket, "datasets/" + test_path, save_path + test_path)
 
     print("Files placed in temporary location:", save_path)

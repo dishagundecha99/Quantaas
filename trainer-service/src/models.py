@@ -74,6 +74,7 @@ class LoadModel():
 
     def get_model(self):
         return self.tokenizer, self.model
+    
 '''from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoModelForQuestionAnswering, AutoModelForSeq2SeqLM
 import torch
 import torch.quantization
