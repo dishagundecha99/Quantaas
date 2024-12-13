@@ -1,72 +1,50 @@
 from backend_server import app, session, mongo
-from flask import redirect, url_for, jsonify, request
+from flask import jsonify, request
 
-# Function to get the best evaluation (by accuracy) across different models (original, pruned, quantized) for each experiment
-def best_runs_all(runs):
-    best_runs = dict()
-    for exp_name in runs:
-        best_trial = best_run_exp(exp_name, runs.get(exp_name))
-        best_runs[exp_name] = best_trial
-    return best_runs
-
-# Function to determine the best model based on accuracy (could be pruned, quantized, or original)
-def best_run_exp(exp_name, runs):
-    best_trial = f'{exp_name}_{0}'  # Default best trial is the first run
-    best_accuracy = float(runs[0].get('accuracy', 0))  # Default to 0 if accuracy not found
-    for trial in runs:
-        accuracy = float(trial.get('accuracy', 0))  # Get accuracy or default to 0
-        if accuracy > best_accuracy:
-            best_trial = trial.get('exp_id')  # Get the exp_id for the best trial
-            best_accuracy = accuracy
-    return best_trial
+def best_run(run):
+    accuracies = {
+        'original': run.get('model_meta_data', {}).get('evaluation', {}).get('accuracy', 0),
+        'pruned': run.get('model_meta_data', {}).get('pruning', {}).get('accuracy', 0),
+        'quantized': run.get('model_meta_data', {}).get('quantization', {}).get('accuracy', 0),
+    }
+    # Determine the model type with the highest accuracy
+    best_model = max(accuracies, key=accuracies.get)
+    return {'best_model': best_model, 'accuracy': accuracies[best_model]}
 
 @app.route('/prev-runs', defaults={'expname': None}, methods=['GET'])
 @app.route('/prev-runs/<expname>', methods=['GET'])
 def prev_runs(expname):
-    if 'user-id' not in session:
-        session['user-id'] = request.args.get('user-id')
+    if 'user_id' not in session:
+        session['user_id'] = request.args.get('user-id')
 
-    prev_runs = mongo.get_all_runs(session.get('user-id'))
-    running_keys = list()
+    prev_runs = mongo.get_all_runs(session.get('user_id'))
 
-    # Remove experiments that are still in progress (if any)
-    for exp in prev_runs:
-        remove_key = False
-        print(prev_runs)
-        for trial in prev_runs.get(exp):
-            print(trial)
-            # No need to check for 'training', instead check if pruning or quantization is in progress
-            if trial.get('pruning_in_progress') or trial.get('quantization_in_progress'):
-                remove_key = True
-                break
-        if remove_key:
-            running_keys.append(exp)
+    # Filter out experiments where pruning or quantization is still in progress
+    completed_runs = {
+        exp_name: run for exp_name, run in prev_runs.items()
+        if run.get('model_meta_data', {}).get('pruning', {}).get('completed', True) and
+           run.get('model_meta_data', {}).get('quantization', {}).get('completed', True)
+    }
 
-    # Remove the experiments that are still running from prev_runs
-    for exp in running_keys:
-        prev_runs.pop(exp)
+    if not completed_runs:
+        return jsonify({'message': 'No previous experiments were found'}), 200
 
-    if len(prev_runs.keys()) == 0:
-        data = {'message': 'No previous experiments were found'}
-        return jsonify(data), 200
-    elif expname is None:
-        # Return all experiments and their evaluations
+    if expname is None:
+        # Return all completed experiments and their best model evaluations
         data = {
-            'message': f'found {len(prev_runs.keys())} experiments',
-            'runs': prev_runs,
-            'best_runs': best_runs_all(prev_runs)
+            'message': f'Found {len(completed_runs)} experiments',
+            'runs': completed_runs,
+            'best_runs': {exp_name: best_run(run) for exp_name, run in completed_runs.items()}
         }
         return jsonify(data), 200
     else:
-        # If an experiment name is provided, return only that experiment's data
-        if expname not in prev_runs:
-            data = {'message': 'Given experiment name does not exist'}
-            return jsonify(data), 200
+        # Return a specific experiment's data
+        if expname not in completed_runs:
+            return jsonify({'message': 'Given experiment name does not exist'}), 200
         else:
-            # Return specific experiment with best evaluations for each model (original, pruned, quantized)
             data = {
                 'message': 'Found experiment',
-                'runs': prev_runs.get(expname),
-                'best_runs': {expname: best_run_exp(expname, prev_runs.get(expname))}
+                'runs': completed_runs[expname],
+                'best_runs': {expname: best_run(completed_runs[expname])}
             }
             return jsonify(data), 200

@@ -1,33 +1,23 @@
 from backend_server import app, session, mongo
-from flask import redirect, url_for, jsonify, request
-
+from flask import jsonify, request
 
 @app.route('/current-run', methods=['GET'])
 def current_run():
-    if 'user-id' not in session:
-        session['user-id'] = request.args.get('user-id')
+    if 'user_id' not in session:
+        session['user_id'] = request.args.get('user-id')
 
-    prev_runs = mongo.get_all_runs(session.get('user-id'))
-    for exp_name in prev_runs:
-        for trial in prev_runs.get(exp_name):
-            if trial.get('pruning_in_progress') or trial.get('quantization_in_progress'): #TO_DO this is ok, just make sure your training value is set when we are pruning or quantizing the model
-                data = {'message': f'{exp_name} is currently running',
-                        'current-run': prev_runs.get(exp_name)}
-                return jsonify(data), 200
-    data = {'message': 'No running jobs found'}
-    return jsonify(data), 200
+    prev_runs = mongo.get_all_runs(session.get('user_id'))
 
-'''
-def current_run():
-    if 'user-id' not in session:
-        session['user-id'] = request.args.get('user-id')
+    for exp_name, run in prev_runs.items():
+        # Check if pruning or quantization is still in progress
+        pruning_in_progress = not run.get('model_meta_data', {}).get('pruning', {}).get('completed', True)
+        quantization_in_progress = not run.get('model_meta_data', {}).get('quantization', {}).get('completed', True)
 
-    prev_runs = mongo.get_all_runs(session.get('user-id'))
-    for exp_name in prev_runs:
-        for trial in prev_runs.get(exp_name):
-            if trial.get('training'): #TO_DO this is ok, just make sure your training value is set when we are pruning or quantizing the model
-                data = {'message': f'{exp_name} is currently running',
-                        'current-run': prev_runs.get(exp_name)}
-                return jsonify(data), 200
-    data = {'message': 'No running jobs found'}
-    return jsonify(data), 200'''
+        if pruning_in_progress or quantization_in_progress:
+            data = {
+                'message': f'Experiment "{exp_name}" is currently running',
+                'current-run': run
+            }
+            return jsonify(data), 200
+
+    return jsonify({'message': 'No running jobs found'}), 200
